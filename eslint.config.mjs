@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Native iOS sources + copied web assets are not part of the web lint root:
+    "ios/**",
   ]),
 ]);
 

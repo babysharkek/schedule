@@ -10,10 +10,12 @@ workflows:
       cocoapods: default
 
     triggering:
+      events:
+        - push
       branch_patterns:
         - pattern: main
           include: true
-          source: push
+          source: true
 
     scripts:
       - name: Install npm dependencies
@@ -28,11 +30,7 @@ workflows:
         script: |
           npm run build
 
-      - name: Add the iOS project
-        script: |
-          npx cap add ios
-
-      - name: Sync web assets
+      - name: Sync web assets and plugins
         script: |
           npx cap sync ios
 
@@ -40,7 +38,7 @@ workflows:
         script: |
           mkdir -p dist build
           xcodebuild \
-            -workspace ios/App/App.xcworkspace \
+            -project ios/App/App.xcodeproj \
             -scheme App \
             -configuration Release \
             -destination 'generic/platform=iOS' \

@@ -17,7 +17,7 @@ export default function OfflinePage() {
         <span className="mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-fill text-label-2">
           <HugeiconsIcon icon={InfoIcon} size={30} strokeWidth={1.5} />
         </span>
-        <h1 className="text-2xl font-bold">You're offline</h1>
+        <h1 className="text-2xl font-bold">You&apos;re offline</h1>
         <p className="mt-2 max-w-[16rem] text-[15px] leading-snug text-label-2">
           No problem — your schedule is stored on this device. Everything you
           see here keeps working.
