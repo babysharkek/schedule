@@ -1,0 +1,47 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: "macos-14"
+
+steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: "22.x"
+    displayName: "Install Node"
+
+  - script: npm ci
+    displayName: "Install dependencies"
+
+  - script: node scripts/generate-icons.mjs
+    displayName: "Generate app icons"
+
+  - script: npm run build
+    displayName: "Build the web app"
+
+  - script: npx cap add ios && npx cap sync ios
+    displayName: "Add and sync iOS project"
+
+  - script: |
+      mkdir -p dist build
+      xcodebuild \
+        -workspace ios/App/App.xcworkspace \
+        -scheme App \
+        -configuration Release \
+        -destination 'generic/platform=iOS' \
+        -derivedDataPath build \
+        CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+        archive -archivePath build/Saturn.xcarchive
+      mkdir -p build/Payload
+      cp -r build/Saturn.xcarchive/Products/Applications/App.app build/Payload/Saturn.app
+      cd build
+      zip -r ../dist/Saturn.ipa Payload
+    displayName: "Build an unsigned IPA"
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      targetPath: dist/Saturn.ipa
+      artifactName: Saturn-unsigned-ipa
+    displayName: "Publish IPA artifact"

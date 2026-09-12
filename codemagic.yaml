@@ -1,0 +1,57 @@
+workflows:
+  unsigned-ipa:
+    name: Saturn unsigned IPA
+    max_build_duration: 45
+    instance_type: mac_mini_m2
+
+    environment:
+      node: latest
+      xcode: latest
+      cocoapods: default
+
+    triggering:
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: push
+
+    scripts:
+      - name: Install npm dependencies
+        script: |
+          npm ci
+
+      - name: Generate app icons
+        script: |
+          node scripts/generate-icons.mjs
+
+      - name: Build the web app
+        script: |
+          npm run build
+
+      - name: Add the iOS project
+        script: |
+          npx cap add ios
+
+      - name: Sync web assets
+        script: |
+          npx cap sync ios
+
+      - name: Build an unsigned IPA
+        script: |
+          mkdir -p dist build
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            archive -archivePath build/Saturn.xcarchive
+          mkdir -p build/Payload
+          cp -r build/Saturn.xcarchive/Products/Applications/App.app build/Payload/Saturn.app
+          cd build
+          zip -r ../dist/Saturn.ipa Payload
+
+    artifacts:
+      - dist/Saturn.ipa
+      - /tmp/xcodebuild_logs/*.log
