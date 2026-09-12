@@ -43,8 +43,9 @@ workflows:
             -configuration Release \
             -destination 'generic/platform=iOS' \
             -derivedDataPath build \
-            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- OTHER_CODE_SIGN_FLAGS=--timestamp=none \
             archive -archivePath build/Saturn.xcarchive
+          codesign -f -s - --preserve-metadata=entitlements build/Saturn.xcarchive/Products/Applications/App.app || true
           mkdir -p build/Payload
           cp -r build/Saturn.xcarchive/Products/Applications/App.app build/Payload/Saturn.app
           cd build
